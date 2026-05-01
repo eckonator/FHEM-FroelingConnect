@@ -66,7 +66,7 @@ reload 73_FroelingConnect
 
 Eine touch-freundliche Bedienoberfläche ist unter `www/froeling/index.html` enthalten. Sie wird direkt auf den FHEM-Server deployt, damit sie die FHEM-API ohne CORS-Probleme aufrufen kann:
 
-<img src="screenshots/webapp-live.png" alt="Webapp Screenshot Live" width="320">
+<img src="screenshots/webapp-live.png" alt="Webapp Screenshot Live" width="320"> <img src="screenshots/webapp-verlauf.png" alt="Webapp Screenshot Verlauf" width="320">
 
 ```bash
 mkdir -p /opt/fhem/www/froeling
