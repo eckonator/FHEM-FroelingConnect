@@ -1,0 +1,1232 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Fröling PE1</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-deep:    #090603;
+      --bg-card:    rgba(20, 11, 4, 0.78);
+      --fire:       #ff6218;
+      --fire-dim:   rgba(255, 98, 24, 0.14);
+      --fire-glow:  rgba(255, 98, 24, 0.32);
+      --ember:      #ffb040;
+      --ember-dim:  rgba(255, 176, 64, 0.12);
+      --cold:       #58b8d4;
+      --cold-dim:   rgba(88, 184, 212, 0.11);
+      --green:      #4dbe8a;
+      --pellet:     #c89040;
+      --pellet-dim: rgba(200, 144, 64, 0.13);
+      --danger:     #ff3f55;
+      --warn:       #ffcc44;
+      --text-1:     #f5e8d5;
+      --text-2:     rgba(245, 232, 213, 0.50);
+      --text-3:     rgba(245, 232, 213, 0.22);
+      --border:     rgba(255, 98, 24, 0.14);
+    }
+
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+    html { height:100%; }
+    body { font-family:'DM Sans',sans-serif; background:var(--bg-deep); color:var(--text-1); min-height:100vh; overflow-x:hidden; }
+
+    /* ── BACKGROUND ── */
+    .scene { position:fixed; inset:0; z-index:0; overflow:hidden; pointer-events:none; }
+    .scene-gradient {
+      position:absolute; inset:0;
+      background:
+        radial-gradient(ellipse 80% 55% at 50% 105%, rgba(180,55,0,.18) 0%, transparent 58%),
+        radial-gradient(ellipse 55% 40% at 18% 85%,  rgba(140,35,0,.11) 0%, transparent 52%),
+        radial-gradient(ellipse 45% 35% at 82% 20%,  rgba(50,22,0,.16)  0%, transparent 48%),
+        linear-gradient(175deg, #090603 0%, #0e0804 55%, #0a0603 100%);
+    }
+    .scene-lines {
+      position:absolute; inset:0;
+      background-image:repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(255,98,24,.007) 3px, rgba(255,98,24,.007) 4px);
+    }
+    .scene-glow {
+      position:absolute; bottom:-60px; left:-8%; width:116%; height:240px;
+      background:radial-gradient(ellipse 68% 58% at 50% 100%, rgba(200,72,0,.12) 0%, transparent 68%);
+      animation:glowPulse 5.5s ease-in-out infinite alternate;
+    }
+    @keyframes glowPulse { from{opacity:.5;transform:scaleX(.94)} to{opacity:1;transform:scaleX(1.06)} }
+
+    /* ── EMBERS ── */
+    .embers { position:absolute; inset:0; }
+    .ember {
+      position:absolute; bottom:-20px; border-radius:50%;
+      background:radial-gradient(circle at 38% 35%, rgba(255,150,48,.95), rgba(220,50,0,.25));
+      animation:emberRise linear infinite;
+    }
+    .ember:nth-child(1)  { width:3px;  height:3px;  left:7%;   animation-duration:13s;  animation-delay:0s;    }
+    .ember:nth-child(2)  { width:2px;  height:2px;  left:17%;  animation-duration:9s;   animation-delay:2.1s;  }
+    .ember:nth-child(3)  { width:4px;  height:4px;  left:28%;  animation-duration:16s;  animation-delay:3.8s;  }
+    .ember:nth-child(4)  { width:2px;  height:2px;  left:39%;  animation-duration:10s;  animation-delay:0.6s;  }
+    .ember:nth-child(5)  { width:3px;  height:3px;  left:49%;  animation-duration:14s;  animation-delay:5.3s;  }
+    .ember:nth-child(6)  { width:2px;  height:2px;  left:58%;  animation-duration:8.5s; animation-delay:1.9s;  }
+    .ember:nth-child(7)  { width:4px;  height:4px;  left:68%;  animation-duration:15s;  animation-delay:4.7s;  }
+    .ember:nth-child(8)  { width:2px;  height:2px;  left:77%;  animation-duration:11s;  animation-delay:0.9s;  }
+    .ember:nth-child(9)  { width:3px;  height:3px;  left:87%;  animation-duration:17s;  animation-delay:6.8s;  }
+    .ember:nth-child(10) { width:2px;  height:2px;  left:94%;  animation-duration:10.5s;animation-delay:3.1s;  }
+    @keyframes emberRise {
+      0%   { transform:translateY(0) translateX(0);   opacity:0; }
+      7%   { opacity:1; }
+      50%  { transform:translateY(-55vh) translateX(14px);  opacity:.65; }
+      90%  { opacity:.15; }
+      100% { transform:translateY(-102vh) translateX(-6px); opacity:0; }
+    }
+
+    /* ── APP SHELL ── */
+    .app { position:relative; z-index:1; max-width:460px; margin:0 auto; padding:28px 18px 56px; min-height:100vh; }
+
+    /* ── HEADER ── */
+    .header { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:24px; }
+    .brand-name { font-family:'Cormorant Garamond',serif; font-size:30px; font-weight:300; letter-spacing:.18em; text-transform:uppercase; color:var(--text-1); line-height:1; }
+    .brand-tag  { font-size:9.5px; font-weight:500; letter-spacing:.32em; text-transform:uppercase; color:var(--fire); margin-top:5px; opacity:.82; }
+    .hdr-actions { display:flex; gap:8px; padding-top:4px; }
+    .icon-btn {
+      width:38px; height:38px; border-radius:50%;
+      background:rgba(255,98,24,.07); border:1px solid var(--border);
+      color:var(--text-2); display:flex; align-items:center; justify-content:center;
+      cursor:pointer; font-size:15px; backdrop-filter:blur(14px); transition:all .22s;
+    }
+    .icon-btn:hover, .icon-btn.active { background:rgba(255,98,24,.16); border-color:rgba(255,98,24,.45); color:var(--fire); }
+
+    /* ── SETTINGS ── */
+    .settings-panel { overflow:hidden; max-height:0; transition:max-height .38s ease, margin .38s ease; margin-bottom:0; }
+    .settings-panel.open { max-height:220px; margin-bottom:20px; }
+    .settings-inner { background:var(--bg-card); border:1px solid var(--border); border-radius:18px; padding:18px 20px; backdrop-filter:blur(24px); display:flex; flex-direction:column; gap:10px; }
+    .field-label { font-size:9px; font-weight:600; letter-spacing:.28em; text-transform:uppercase; color:var(--fire); display:block; margin-bottom:5px; }
+    .field-input {
+      width:100%; background:rgba(0,0,0,.35); border:1px solid rgba(255,255,255,.08);
+      border-radius:10px; padding:10px 13px; color:var(--text-1);
+      font-family:'DM Sans',sans-serif; font-size:13px; outline:none; transition:border-color .2s;
+    }
+    .field-input:focus { border-color:rgba(255,98,24,.52); }
+
+    /* ── STATUS ROW ── */
+    .status-row { display:flex; align-items:center; gap:9px; flex-wrap:wrap; margin-bottom:18px; }
+    .status-chip {
+      display:inline-flex; align-items:center; gap:7px; padding:6px 13px 6px 10px;
+      border-radius:100px; font-size:10.5px; font-weight:500; letter-spacing:.07em;
+      text-transform:uppercase; border:1px solid transparent; transition:all .4s;
+    }
+    .status-dot { width:6px; height:6px; border-radius:50%; flex-shrink:0; }
+    .status-chip.connected { background:var(--fire-dim); border-color:rgba(255,98,24,.32); color:var(--fire); }
+    .status-chip.connected .status-dot { background:var(--fire); box-shadow:0 0 7px rgba(255,98,24,.7); animation:dotPulse 2.4s ease-in-out infinite; }
+    .status-chip.error  { background:rgba(255,63,85,.1);  border-color:rgba(255,63,85,.28);  color:var(--danger); }
+    .status-chip.error  .status-dot { background:var(--danger); }
+    .status-chip.idle   { background:rgba(255,255,255,.04); border-color:rgba(255,255,255,.09); color:var(--text-2); }
+    .status-chip.idle   .status-dot { background:var(--text-3); }
+    @keyframes dotPulse { 0%,100%{opacity:1} 50%{opacity:.35} }
+
+    .betrieb-chip {
+      display:inline-flex; align-items:center; gap:7px; padding:6px 13px 6px 11px;
+      border-radius:100px; font-size:10.5px; font-weight:500; letter-spacing:.07em;
+      text-transform:uppercase; border:1px solid transparent; transition:all .4s;
+    }
+    .betrieb-chip.on  { background:var(--fire-dim); border-color:rgba(255,98,24,.38); color:var(--fire); animation:fireGlow 2.8s ease-in-out infinite alternate; }
+    .betrieb-chip.off { background:rgba(255,255,255,.04); border-color:rgba(255,255,255,.08); color:var(--text-3); }
+    @keyframes fireGlow { from{box-shadow:none} to{box-shadow:0 0 20px rgba(255,98,24,.22)} }
+    .flame-svg { width:12px; height:17px; display:block; flex-shrink:0; }
+    .flame-body { transition:fill .4s; }
+    .betrieb-chip.on  .flame-body { fill:var(--fire); animation:flameFlicker 1.3s ease-in-out infinite alternate; transform-origin:50% 95%; transform-box:fill-box; }
+    .betrieb-chip.off .flame-body { fill:var(--text-3); }
+    @keyframes flameFlicker { from{transform:scaleY(.84) scaleX(1)} to{transform:scaleY(1) scaleX(.9)} }
+
+    /* ── MAIN TEMPERATURE ARC ── */
+    .temp-hero { display:flex; flex-direction:column; align-items:center; padding:4px 0 24px; }
+    .arc-wrapper { position:relative; width:264px; height:264px; overflow:visible; }
+    #arcSvg { position:absolute; inset:0; width:100%; height:100%; overflow:visible; }
+    .arc-center {
+      position:absolute; inset:0;
+      display:flex; flex-direction:column; align-items:center; justify-content:center;
+      pointer-events:none; user-select:none; text-align:center;
+    }
+    .arc-eyebrow { font-size:8px; font-weight:600; letter-spacing:.3em; text-transform:uppercase; color:var(--text-2); margin-bottom:4px; }
+    .temp-now { font-family:'Cormorant Garamond',serif; font-size:82px; font-weight:300; line-height:.9; color:var(--text-1); letter-spacing:-.025em; transition:color .6s; }
+    .temp-now sup { font-size:30px; font-weight:300; color:var(--fire); vertical-align:super; line-height:0; margin-left:2px; }
+    .temp-now.hot { color:#ffe0b0; }
+    .arc-sublabel { margin-top:15px; font-size:11.5px; color:var(--text-2); letter-spacing:.03em; }
+    .arc-sublabel strong { font-weight:500; }
+    .arc-sublabel .v-fire  { color:var(--fire); }
+    .arc-sublabel .v-cold  { color:var(--cold); }
+    .arc-sublabel .v-ember { color:var(--ember); }
+
+    /* ── CARDS ── */
+    .cards-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:10px; }
+
+    .card {
+      background:var(--bg-card); border:1px solid var(--border);
+      border-radius:18px; padding:15px; backdrop-filter:blur(20px);
+      display:flex; flex-direction:column; gap:11px;
+    }
+    .card-full { grid-column:1 / -1; }
+
+    .card-header { display:flex; align-items:center; gap:9px; }
+    .card-icon {
+      width:30px; height:30px; border-radius:9px; display:flex; align-items:center;
+      justify-content:center; font-size:15px; flex-shrink:0;
+    }
+    .ci-fire   { background:var(--fire-dim); }
+    .ci-cold   { background:var(--cold-dim); }
+    .ci-ember  { background:var(--ember-dim); }
+    .ci-pellet { background:var(--pellet-dim); }
+    .card-title { font-size:9.5px; font-weight:600; letter-spacing:.22em; text-transform:uppercase; color:var(--text-2); }
+
+    .card-rows { display:flex; flex-direction:column; gap:7px; }
+    .card-row { display:flex; align-items:baseline; justify-content:space-between; gap:6px; }
+    .cr-label { font-size:10.5px; color:var(--text-2); flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .cr-val   { font-size:16px; font-weight:500; color:var(--text-1); white-space:nowrap; flex-shrink:0; }
+    .cr-val .u { font-size:10px; color:var(--text-2); margin-left:1px; }
+    .cr-val.fire-v  { color:var(--fire); }
+    .cr-val.ember-v { color:var(--ember); }
+    .cr-val.cold-v  { color:var(--cold); }
+    .cr-val.warn-v  { color:var(--warn); }
+    .cr-val.danger-v{ color:var(--danger); }
+
+    /* ── PROGRESS BAR ── */
+    .prog-wrap { display:flex; flex-direction:column; gap:5px; }
+    .prog-head { display:flex; justify-content:space-between; align-items:baseline; }
+    .prog-lbl { font-size:9px; font-weight:600; letter-spacing:.2em; text-transform:uppercase; color:var(--text-3); }
+    .prog-pct { font-size:13px; font-weight:500; color:var(--text-1); }
+    .prog-track { height:5px; background:rgba(255,255,255,.07); border-radius:100px; overflow:hidden; }
+    .prog-fill  { height:100%; border-radius:100px; transition:width .85s cubic-bezier(.34,1.1,.64,1); }
+    .pf-fire    { background:linear-gradient(90deg, #b82800, #ff6218, #ffb040); }
+    .pf-pellet  { background:linear-gradient(90deg, #7a4e10, #c89040, #f0c060); }
+
+    /* ── PUMP INDICATOR ── */
+    .pump-row { display:flex; align-items:center; gap:8px; }
+    .pump-dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; transition:all .4s; }
+    .pump-dot.run { background:var(--fire); box-shadow:0 0 8px var(--fire); animation:dotPulse 1.7s ease-in-out infinite; }
+    .pump-dot.off { background:var(--text-3); }
+    .pump-lbl { font-size:10.5px; color:var(--text-2); }
+
+    /* ── PELLET SILO ── */
+    .silo-layout { display:flex; align-items:center; gap:14px; }
+    .silo-stats  { flex:1; display:flex; flex-direction:column; gap:9px; }
+    .silo-stat   { display:flex; flex-direction:column; gap:1px; }
+    .ss-label { font-size:8.5px; font-weight:600; letter-spacing:.2em; text-transform:uppercase; color:var(--text-3); }
+    .ss-val   { font-size:20px; font-weight:400; color:var(--ember); letter-spacing:.01em; }
+    .ss-val .u { font-size:11px; color:var(--text-2); }
+    .ss-val.sm  { font-size:15px; color:var(--text-2); }
+
+    /* ── WARN BANNER ── */
+    .warn-banner {
+      display:none; align-items:center; gap:10px; padding:13px 16px;
+      background:rgba(255,204,68,.07); border:1px solid rgba(255,204,68,.28);
+      border-radius:14px; margin-bottom:10px; backdrop-filter:blur(16px);
+    }
+    .warn-banner.show { display:flex; }
+    .warn-icon { font-size:18px; flex-shrink:0; }
+    .warn-text { font-size:12px; color:var(--warn); line-height:1.45; }
+    .warn-text strong { font-weight:600; }
+
+    /* ── DETAIL TOGGLE ── */
+    .detail-toggle {
+      display:flex; align-items:center; justify-content:center; gap:8px;
+      cursor:pointer; color:var(--text-3); font-size:10px; font-weight:500;
+      letter-spacing:.2em; text-transform:uppercase; padding:10px 8px; border-radius:12px;
+      transition:color .22s; user-select:none; margin:2px 0;
+    }
+    .detail-toggle:hover { color:var(--fire); }
+    .detail-arrow { font-size:12px; transition:transform .3s; }
+    .detail-toggle.open .detail-arrow { transform:rotate(180deg); }
+    .detail-panel { overflow:hidden; max-height:0; transition:max-height .45s ease, margin .4s ease; margin-bottom:0; }
+    .detail-panel.open { max-height:280px; margin-bottom:10px; }
+
+    /* ── DIVIDER ── */
+    .divider { height:1px; background:rgba(255,98,24,.08); }
+
+    /* ── ACTION ROW ── */
+    .action-row { display:flex; gap:10px; margin-top:10px; }
+    .btn-refresh {
+      flex:1; padding:16px; border-radius:16px;
+      background:rgba(255,98,24,.08); border:1px solid rgba(255,98,24,.2);
+      color:var(--fire); font-family:'DM Sans',sans-serif;
+      font-size:11.5px; font-weight:600; letter-spacing:.16em; text-transform:uppercase;
+      cursor:pointer; display:flex; align-items:center; justify-content:center; gap:9px; transition:all .22s;
+    }
+    .btn-refresh:hover { background:rgba(255,98,24,.15); border-color:rgba(255,98,24,.48); box-shadow:0 0 28px rgba(255,98,24,.1); }
+    .btn-refresh:active { transform:scale(.98); }
+    .refresh-ico { font-size:16px; display:inline-block; }
+    .btn-refresh.spinning .refresh-ico { animation:spinIcon .8s linear infinite; }
+    @keyframes spinIcon { to{transform:rotate(360deg)} }
+
+    /* ── FOOTER ── */
+    .footer-info { text-align:center; margin-top:16px; display:flex; flex-direction:column; gap:5px; }
+    .fault-line  { font-size:11.5px; color:var(--text-3); letter-spacing:.04em; min-height:16px; transition:color .3s; }
+    .fault-line.err { color:var(--danger); }
+    .update-line { font-size:10px; color:var(--text-3); letter-spacing:.08em; }
+
+    /* ── TOAST ── */
+    .toast {
+      position:fixed; bottom:28px; left:50%;
+      transform:translateX(-50%) translateY(80px);
+      background:rgba(9,6,3,.96); border:1px solid var(--border);
+      border-radius:100px; padding:11px 22px;
+      font-size:12.5px; font-weight:500; letter-spacing:.04em; color:var(--text-1);
+      backdrop-filter:blur(20px); transition:transform .32s cubic-bezier(.34,1.56,.64,1);
+      z-index:200; white-space:nowrap; pointer-events:none;
+      box-shadow:0 8px 32px rgba(0,0,0,.5);
+    }
+    .toast.show { transform:translateX(-50%) translateY(0); }
+    .toast.ok   { border-color:rgba(77,190,138,.4);  color:var(--green); }
+    .toast.err  { border-color:rgba(255,63,85,.4);   color:var(--danger); }
+
+    @media(max-width:380px) {
+      .app { padding:20px 12px 48px; }
+      .arc-wrapper { width:224px; height:224px; }
+      .temp-now { font-size:68px; }
+    }
+    @media(min-width:600px) { .app { padding-top:40px; } }
+
+    /* ── TAB BAR ── */
+    .tab-bar {
+      display:flex; gap:5px; margin-bottom:16px;
+      padding:4px; background:rgba(255,255,255,.04);
+      border:1px solid var(--border); border-radius:14px;
+    }
+    .tab-btn {
+      flex:1; padding:10px 6px; border:none; border-radius:10px;
+      font-family:'DM Sans',sans-serif; font-size:11px; font-weight:600;
+      letter-spacing:.18em; text-transform:uppercase; cursor:pointer;
+      background:transparent; color:var(--text-2); transition:all .24s;
+    }
+    .tab-btn.active { background:rgba(255,98,24,.14); color:var(--fire); box-shadow:0 0 20px rgba(255,98,24,.08); }
+    .tab-btn:hover:not(.active) { color:var(--text-1); }
+
+    /* ── HISTORY VIEW ── */
+    .range-row { display:flex; gap:6px; margin-bottom:18px; flex-wrap:wrap; }
+    .range-btn {
+      padding:7px 14px; border-radius:100px; flex:1; min-width:0;
+      background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.08);
+      color:var(--text-2); font-family:'DM Sans',sans-serif;
+      font-size:10px; font-weight:500; letter-spacing:.1em; text-transform:uppercase;
+      cursor:pointer; transition:all .22s;
+    }
+    .range-btn.active { background:rgba(255,98,24,.12); border-color:rgba(255,98,24,.32); color:var(--fire); }
+    .range-btn:hover:not(.active) { border-color:rgba(255,98,24,.2); color:var(--text-1); }
+
+    .chart-card {
+      background:var(--bg-card); border:1px solid var(--border);
+      border-radius:18px; padding:18px 14px 14px; backdrop-filter:blur(20px);
+      margin-bottom:12px; position:relative;
+    }
+    .chart-card-title {
+      font-size:8.5px; font-weight:600; letter-spacing:.28em; text-transform:uppercase;
+      color:var(--fire); margin-bottom:14px; opacity:.85;
+    }
+    .chart-wrap { height:210px; position:relative; }
+    .chart-loading {
+      position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+      color:var(--text-3); font-size:10.5px; letter-spacing:.12em; text-transform:uppercase;
+      background:var(--bg-card); border-radius:10px; z-index:2;
+    }
+    .chart-loading.hidden { display:none; }
+  </style>
+</head>
+<body>
+
+<div class="scene">
+  <div class="scene-gradient"></div>
+  <div class="scene-lines"></div>
+  <div class="scene-glow"></div>
+  <div class="embers">
+    <div class="ember"></div><div class="ember"></div><div class="ember"></div>
+    <div class="ember"></div><div class="ember"></div><div class="ember"></div>
+    <div class="ember"></div><div class="ember"></div><div class="ember"></div>
+    <div class="ember"></div>
+  </div>
+</div>
+
+<div class="app">
+
+  <!-- Header -->
+  <div class="header">
+    <div>
+      <div class="brand-name">Fröling PE1</div>
+      <div class="brand-tag">Pelletheizung</div>
+    </div>
+    <div class="hdr-actions">
+      <button class="icon-btn" id="settingsBtn" onclick="toggleSettings()" title="Einstellungen">⚙</button>
+    </div>
+  </div>
+
+  <!-- Tab Bar -->
+  <div class="tab-bar">
+    <button class="tab-btn active" id="tabLive"    onclick="switchTab('live')">Live</button>
+    <button class="tab-btn"        id="tabHistory" onclick="switchTab('history')">Verlauf</button>
+  </div>
+
+  <!-- Settings -->
+  <div class="settings-panel" id="settingsPanel">
+    <div class="settings-inner">
+      <div>
+        <label class="field-label" for="fhemUrlInput">FHEM URL</label>
+        <input class="field-input" type="url" id="fhemUrlInput" placeholder="/fhem" oninput="saveSettings()">
+      </div>
+      <div>
+        <label class="field-label" for="deviceInput">FHEM Device-Name</label>
+        <input class="field-input" type="text" id="deviceInput" placeholder="Froeling_PE1" oninput="saveSettings()">
+      </div>
+      <div>
+        <label class="field-label" for="dblogInput">DbLog Device-Name</label>
+        <input class="field-input" type="text" id="dblogInput" placeholder="DBLOG" oninput="saveSettings()">
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ VIEW: LIVE ═══ -->
+  <div id="viewLive">
+
+  <!-- Status -->
+  <div class="status-row">
+    <div class="status-chip idle" id="statusChip">
+      <div class="status-dot"></div>
+      <span id="statusLabel">Verbinde…</span>
+    </div>
+    <div class="betrieb-chip off" id="betriebChip">
+      <svg class="flame-svg" viewBox="0 0 12 17" fill="none">
+        <path class="flame-body" d="M6 16.5C2.2 16.5.6 13.2 1.1 10.4 1.6 7.7 3.2 6.6 3.2 4.3c1.1 1.6 1.3 3.2 1.3 3.2C5.4 5.8 5.9 3.5 5.1.8 7.4 1.9 9.5 4 9 7c0 0 1.1-.95 1.1-2.5C11.6 6.2 12.1 8.8 11 10.9 10.2 12.5 8.3 14.1 8.3 14.1c.55-1.05.55-2.65-.5-3.7-.5 1.1-.3 3.7-1.8 6.1z"/>
+      </svg>
+      <span id="betriebLabel">Standby</span>
+    </div>
+  </div>
+
+  <!-- Main Arc: Kesseltemperatur -->
+  <div class="temp-hero">
+    <div class="arc-wrapper">
+      <svg id="arcSvg" viewBox="0 0 220 220">
+        <defs>
+          <filter id="fGlow" x="-30%" y="-30%" width="160%" height="160%">
+            <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="b"/>
+            <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+          <filter id="fThumb" x="-80%" y="-80%" width="260%" height="260%">
+            <feGaussianBlur in="SourceGraphic" stdDeviation="5.5" result="b"/>
+            <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+          <!-- Gradient along the arc track (userSpace = fixed coords) -->
+          <linearGradient id="arcGrad" x1="42.83" y1="110" x2="177.17" y2="110" gradientUnits="userSpaceOnUse">
+            <stop offset="0%"   stop-color="#b82800"/>
+            <stop offset="45%"  stop-color="#ff6218"/>
+            <stop offset="100%" stop-color="#ffb040"/>
+          </linearGradient>
+        </defs>
+
+        <!-- Inner decorative ring -->
+        <circle cx="110" cy="110" r="70" fill="none" stroke="rgba(255,98,24,.05)" stroke-width="1"/>
+
+        <!-- Background track: 270° CCW from upper-left (225°) to upper-right (315°) -->
+        <path id="arcTrack"
+          d="M 42.83 42.83 A 95 95 0 1 0 177.17 42.83"
+          fill="none" stroke="rgba(255,255,255,.08)" stroke-width="5" stroke-linecap="round"/>
+
+        <!-- Reference ticks at 25%, 50%, 75% (25°C, 50°C, 75°C) -->
+        <circle cx="22.2"  cy="146.4" r="2.2" fill="rgba(255,255,255,.14)"/>
+        <circle cx="110"   cy="205"   r="2.2" fill="rgba(255,255,255,.14)"/>
+        <circle cx="197.8" cy="146.4" r="2.2" fill="rgba(255,255,255,.14)"/>
+
+        <!-- Scale labels -->
+        <text x="11"  y="53"  fill="rgba(245,232,213,.30)" font-size="9.5" font-family="DM Sans,sans-serif">0°</text>
+        <text x="7"   y="156" fill="rgba(245,232,213,.18)" font-size="8.5" font-family="DM Sans,sans-serif">25°</text>
+        <text x="110" y="218" fill="rgba(245,232,213,.18)" font-size="8.5" font-family="DM Sans,sans-serif" text-anchor="middle">50°</text>
+        <text x="213" y="156" fill="rgba(245,232,213,.18)" font-size="8.5" font-family="DM Sans,sans-serif" text-anchor="end">75°</text>
+        <text x="209" y="53"  fill="rgba(245,232,213,.30)" font-size="9.5" font-family="DM Sans,sans-serif" text-anchor="end">100°</text>
+
+        <!-- Fill arc (dynamic) -->
+        <path id="arcFill" d="" fill="none" stroke="url(#arcGrad)" stroke-width="5"
+          stroke-linecap="round" filter="url(#fGlow)"/>
+
+        <!-- Start / end dots -->
+        <circle cx="42.83"  cy="42.83" r="3" fill="rgba(255,98,24,.3)"/>
+        <circle cx="177.17" cy="42.83" r="3" fill="rgba(255,98,24,.18)"/>
+
+        <!-- Thumb -->
+        <circle id="arcThumb" cx="42.83" cy="42.83" r="10" fill="#ff6218" filter="url(#fThumb)"/>
+      </svg>
+
+      <div class="arc-center">
+        <div class="arc-eyebrow">Kesseltemperatur</div>
+        <div class="temp-now" id="tempNow">–<sup>°</sup></div>
+        <div class="arc-sublabel" id="arcSublabel">
+          Abgas: <strong class="v-fire" id="abgasVal">–</strong>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─────────────── CARDS ─────────────── -->
+  <div class="cards-grid">
+
+    <!-- Puffer (full width) -->
+    <div class="card card-full">
+      <div class="card-header">
+        <div class="card-icon ci-fire">🔥</div>
+        <span class="card-title">Pufferspeicher</span>
+      </div>
+      <div class="card-rows">
+        <div class="card-row">
+          <span class="cr-label">Temperatur oben</span>
+          <span class="cr-val fire-v" id="puf-oben">– <span class="u">°C</span></span>
+        </div>
+        <div class="card-row">
+          <span class="cr-label">Temperatur unten</span>
+          <span class="cr-val" id="puf-unten">– <span class="u">°C</span></span>
+        </div>
+      </div>
+      <div class="prog-wrap">
+        <div class="prog-head">
+          <span class="prog-lbl">Ladezustand</span>
+          <span class="prog-pct" id="puf-pct">–</span>
+        </div>
+        <div class="prog-track"><div class="prog-fill pf-fire" id="puf-bar" style="width:0%"></div></div>
+      </div>
+      <div class="pump-row">
+        <div class="pump-dot off" id="puf-dot"></div>
+        <span class="pump-lbl" id="puf-pump">Pufferpumpe: –</span>
+      </div>
+    </div>
+
+    <!-- Boiler -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon ci-cold">🌊</div>
+        <span class="card-title">Warmwasser</span>
+      </div>
+      <div class="card-rows">
+        <div class="card-row">
+          <span class="cr-label">Boilertemp.</span>
+          <span class="cr-val ember-v" id="boil-temp">– <span class="u">°C</span></span>
+        </div>
+      </div>
+      <div class="pump-row">
+        <div class="pump-dot off" id="boil-dot"></div>
+        <span class="pump-lbl" id="boil-pump">Pumpe: –</span>
+      </div>
+    </div>
+
+    <!-- Heizkreis -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon ci-cold">↕</div>
+        <span class="card-title">Heizkreis</span>
+      </div>
+      <div class="card-rows">
+        <div class="card-row">
+          <span class="cr-label">Vorlauf Ist</span>
+          <span class="cr-val fire-v" id="hk-ist">– <span class="u">°C</span></span>
+        </div>
+        <div class="card-row">
+          <span class="cr-label">Vorlauf Soll</span>
+          <span class="cr-val" id="hk-soll">– <span class="u">°C</span></span>
+        </div>
+        <div class="card-row">
+          <span class="cr-label">Außen</span>
+          <span class="cr-val cold-v" id="hk-aussen">– <span class="u">°C</span></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pellets (full width) -->
+    <div class="card card-full">
+      <div class="card-header">
+        <div class="card-icon ci-pellet">🪵</div>
+        <span class="card-title">Pelletversorgung</span>
+      </div>
+      <div class="silo-layout">
+        <!-- Visual silo / tank -->
+        <svg width="58" height="96" viewBox="0 0 58 96" flex-shrink="0" style="flex-shrink:0">
+          <defs>
+            <linearGradient id="siloGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%"   stop-color="#f0c060"/>
+              <stop offset="100%" stop-color="#7a4e10"/>
+            </linearGradient>
+            <clipPath id="siloClip">
+              <rect x="8" y="6" width="42" height="66" rx="3"/>
+            </clipPath>
+          </defs>
+          <!-- Body -->
+          <rect x="7" y="5" width="44" height="68" rx="4.5"
+            fill="rgba(255,255,255,.035)" stroke="rgba(200,144,64,.28)" stroke-width="1.5"/>
+          <!-- Fill (rises from bottom) -->
+          <rect id="siloFill" x="8" y="72" width="42" height="0" rx="3"
+            fill="url(#siloGrad)" clip-path="url(#siloClip)"
+            style="transition:all .9s cubic-bezier(.34,1.1,.64,1)"/>
+          <!-- Fill percentage text (in silo) -->
+          <text id="siloTxt" x="29" y="42" text-anchor="middle"
+            fill="rgba(245,232,213,.45)" font-size="9" font-family="DM Sans,sans-serif">–</text>
+          <!-- Hopper -->
+          <path d="M 7 73 L 18 88 L 40 88 L 51 73 Z"
+            fill="rgba(255,255,255,.025)" stroke="rgba(200,144,64,.2)" stroke-width="1.5"/>
+          <!-- Outlet spout -->
+          <rect x="22" y="87" width="14" height="5" rx="2"
+            fill="rgba(200,144,64,.16)" stroke="rgba(200,144,64,.3)" stroke-width="1"/>
+        </svg>
+
+        <div class="silo-stats">
+          <div class="silo-stat">
+            <span class="ss-label">Behälter (Füllstand)</span>
+            <span class="ss-val" id="silo-behaelter">–<span class="u"> %</span></span>
+          </div>
+          <div class="divider"></div>
+          <div class="silo-stat">
+            <span class="ss-label">Lager Restbestand</span>
+            <span class="ss-val" id="silo-rest">–<span class="u"> t</span></span>
+          </div>
+          <div class="silo-stat">
+            <span class="ss-label">Verbrauch gesamt</span>
+            <span class="ss-val sm" id="silo-verbr">–<span class="u"> t</span></span>
+          </div>
+        </div>
+      </div>
+      <!-- Progress bar for container fill -->
+      <div class="prog-wrap">
+        <div class="prog-head">
+          <span class="prog-lbl">Füllstand Pelletsbehälter</span>
+          <span class="prog-pct" id="silo-pct-lbl">–</span>
+        </div>
+        <div class="prog-track"><div class="prog-fill pf-pellet" id="silo-bar" style="width:0%"></div></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Asche-Warnung -->
+  <div class="warn-banner" id="ascheWarn">
+    <span class="warn-icon">⚠️</span>
+    <span class="warn-text"><strong>Asche leeren!</strong><br>Nur noch <span id="ascheH">–</span> Stunden bis zur Wartung.</span>
+  </div>
+
+  <!-- Kessel Details toggle -->
+  <div class="detail-toggle" id="detailToggle" onclick="toggleDetails()">
+    <span>Kessel Details</span>
+    <span class="detail-arrow" id="detailArrow">▾</span>
+  </div>
+
+  <div class="detail-panel" id="detailPanel">
+    <div class="card">
+      <div class="card-rows">
+        <div class="card-row">
+          <span class="cr-label">Abgastemperatur</span>
+          <span class="cr-val" id="det-abgas">– <span class="u">°C</span></span>
+        </div>
+        <div class="card-row">
+          <span class="cr-label">Saugzug Ansteuerung</span>
+          <span class="cr-val" id="det-saugzug">– <span class="u">%</span></span>
+        </div>
+        <div class="card-row">
+          <span class="cr-label">Restsauerstoffgehalt</span>
+          <span class="cr-val" id="det-o2">– <span class="u">%</span></span>
+        </div>
+        <div class="divider"></div>
+        <div class="card-row">
+          <span class="cr-label">Stunden bis Asche leeren</span>
+          <span class="cr-val ember-v" id="det-asche">– <span class="u">h</span></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Refresh -->
+  <div class="action-row">
+    <button class="btn-refresh" id="refreshBtn" onclick="poll()">
+      <span class="refresh-ico" id="refreshIco">↻</span>
+      <span>Aktualisieren</span>
+    </button>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer-info">
+    <div class="fault-line" id="faultLine"></div>
+    <div class="update-line" id="updateLine"></div>
+  </div>
+
+  </div><!-- viewLive -->
+
+  <!-- ═══ VIEW: HISTORY ═══ -->
+  <div id="viewHistory" style="display:none">
+
+    <div class="range-row">
+      <button class="range-btn" data-h="6"    onclick="setRange(6)">6 h</button>
+      <button class="range-btn active" data-h="24"   onclick="setRange(24)">24 h</button>
+      <button class="range-btn" data-h="168"  onclick="setRange(168)">7 Tage</button>
+      <button class="range-btn" data-h="720"  onclick="setRange(720)">30 Tage</button>
+      <button class="range-btn" data-h="1440" onclick="setRange(1440)">60 Tage</button>
+    </div>
+
+    <div class="chart-card">
+      <div class="chart-card-title">FRÖLING PE1 · Kessel</div>
+      <div class="chart-wrap">
+        <div class="chart-loading" id="loadKessel">Lade …</div>
+        <canvas id="chartKessel"></canvas>
+      </div>
+    </div>
+
+    <div class="chart-card">
+      <div class="chart-card-title">FRÖLING PE1 · Puffer</div>
+      <div class="chart-wrap">
+        <div class="chart-loading" id="loadPuffer">Lade …</div>
+        <canvas id="chartPuffer"></canvas>
+      </div>
+    </div>
+
+    <div class="chart-card">
+      <div class="chart-card-title">FRÖLING PE1 · Boiler</div>
+      <div class="chart-wrap">
+        <div class="chart-loading" id="loadBoiler">Lade …</div>
+        <canvas id="chartBoiler"></canvas>
+      </div>
+    </div>
+
+    <div class="chart-card">
+      <div class="chart-card-title">FRÖLING PE1 · Heizkreis</div>
+      <div class="chart-wrap">
+        <div class="chart-loading" id="loadHeizkreis">Lade …</div>
+        <canvas id="chartHeizkreis"></canvas>
+      </div>
+    </div>
+
+    <div class="chart-card">
+      <div class="chart-card-title">FRÖLING PE1 · Austragung</div>
+      <div class="chart-wrap">
+        <div class="chart-loading" id="loadAustragung">Lade …</div>
+        <canvas id="chartAustragung"></canvas>
+      </div>
+    </div>
+
+    <div class="footer-info" style="margin-top:10px">
+      <div class="update-line" id="histUpdateLine"></div>
+    </div>
+
+  </div><!-- viewHistory -->
+
+</div><!-- .app -->
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+<script>
+  /* ═══════════════════════════════════════════
+     STATE
+  ═══════════════════════════════════════════ */
+  let fhemUrl    = localStorage.getItem('fhemUrl')    || '/fhem';
+  let deviceName = localStorage.getItem('deviceName') || 'Froeling_PE1';
+  let dbLogName  = localStorage.getItem('dbLogName')  || 'DBLOG';
+  let csrfToken  = '';
+  let pollHandle = null;
+  let activeTab  = 'live';
+  let histRange  = 24;
+  let charts     = {};
+  let historyLoaded = false;
+
+  document.getElementById('fhemUrlInput').value = fhemUrl;
+  document.getElementById('deviceInput').value  = deviceName;
+  document.getElementById('dblogInput').value   = dbLogName;
+
+  /* ═══════════════════════════════════════════
+     ARC GEOMETRY
+     270° CCW arc: 225° (upper-left) → 315° (upper-right)
+     SVG: 0° = right, positive = clockwise (Y is down)
+     Temp range: 0–100°C → angle 225°→315° CCW
+  ═══════════════════════════════════════════ */
+  const CX = 110, CY = 110, R = 95;
+  const ANG_START = 225, ARC_SPAN = 270;
+  const T_MIN = 0, T_MAX = 100;
+
+  function polar(deg) {
+    const rad = deg * Math.PI / 180;
+    return { x: CX + R * Math.cos(rad), y: CY + R * Math.sin(rad) };
+  }
+
+  function tempToAngle(t) {
+    const p = Math.max(0, Math.min(1, (t - T_MIN) / (T_MAX - T_MIN)));
+    return ((ANG_START - p * ARC_SPAN) + 360) % 360;
+  }
+
+  function arcPath(fromAng, toAng) {
+    const s    = polar(fromAng);
+    const e    = polar(toAng);
+    const span = ((fromAng - toAng) + 360) % 360;
+    return `M ${s.x.toFixed(2)} ${s.y.toFixed(2)} A ${R} ${R} 0 ${span > 180 ? 1 : 0} 0 ${e.x.toFixed(2)} ${e.y.toFixed(2)}`;
+  }
+
+  function renderArc(temp) {
+    const angle = tempToAngle(temp);
+    const pt    = polar(angle);
+    const p     = (temp - T_MIN) / (T_MAX - T_MIN);
+
+    document.getElementById('arcThumb').setAttribute('cx', pt.x.toFixed(2));
+    document.getElementById('arcThumb').setAttribute('cy', pt.y.toFixed(2));
+
+    const fill = document.getElementById('arcFill');
+    if      (p <= 0.005) fill.setAttribute('d', '');
+    else if (p >= 0.995) fill.setAttribute('d', 'M 42.83 42.83 A 95 95 0 1 0 177.17 42.83');
+    else                 fill.setAttribute('d', arcPath(ANG_START, angle));
+  }
+
+  /* ═══════════════════════════════════════════
+     SILO
+  ═══════════════════════════════════════════ */
+  function renderSilo(pct) {
+    const p   = Math.max(0, Math.min(100, pct));
+    const maxH = 66;
+    const h    = (p / 100) * maxH;
+    const y    = 72 - h;
+    document.getElementById('siloFill').setAttribute('y', y.toFixed(1));
+    document.getElementById('siloFill').setAttribute('height', h.toFixed(1));
+    document.getElementById('siloTxt').textContent  = Math.round(p) + '%';
+  }
+
+  /* ═══════════════════════════════════════════
+     PUMP ROW
+  ═══════════════════════════════════════════ */
+  function renderPump(dotId, lblId, prefix, pctVal) {
+    const on = pctVal !== null && pctVal > 0;
+    document.getElementById(dotId).className = 'pump-dot ' + (on ? 'run' : 'off');
+    document.getElementById(lblId).textContent = prefix + ': ' + (on ? pctVal + ' %' : 'Aus');
+  }
+
+  /* ═══════════════════════════════════════════
+     SETTINGS / TOGGLES
+  ═══════════════════════════════════════════ */
+  function toggleSettings() {
+    const p = document.getElementById('settingsPanel');
+    p.classList.toggle('open');
+    document.getElementById('settingsBtn').classList.toggle('active', p.classList.contains('open'));
+  }
+
+  function saveSettings() {
+    fhemUrl    = document.getElementById('fhemUrlInput').value.trim() || '/fhem';
+    deviceName = document.getElementById('deviceInput').value.trim()  || 'Froeling_PE1';
+    dbLogName  = document.getElementById('dblogInput').value.trim()   || 'DBLOG';
+    localStorage.setItem('fhemUrl',    fhemUrl);
+    localStorage.setItem('deviceName', deviceName);
+    localStorage.setItem('dbLogName',  dbLogName);
+  }
+
+  function toggleDetails() {
+    const p = document.getElementById('detailPanel');
+    const t = document.getElementById('detailToggle');
+    p.classList.toggle('open');
+    t.classList.toggle('open', p.classList.contains('open'));
+  }
+
+  /* ═══════════════════════════════════════════
+     FHEM API
+  ═══════════════════════════════════════════ */
+  function csrfParam() { return csrfToken ? `&fwcsrf=${csrfToken}` : ''; }
+
+  async function fetchCsrf() {
+    try {
+      const res = await fetch(`${fhemUrl}?XHR=1`, { mode:'cors' });
+      const t   = res.headers.get('X-FHEM-csrfToken');
+      if (t) csrfToken = t;
+    } catch(_) {}
+  }
+
+  async function fhemJsonList() {
+    const res  = await fetch(
+      `${fhemUrl}?cmd=jsonlist2+${encodeURIComponent(deviceName)}&XHR=1${csrfParam()}`,
+      { mode:'cors' }
+    );
+    const json = await res.json();
+    return json?.Results?.[0]?.Readings ?? null;
+  }
+
+  /* ═══════════════════════════════════════════
+     POLL
+  ═══════════════════════════════════════════ */
+  async function poll() {
+    const btn = document.getElementById('refreshBtn');
+    btn.classList.add('spinning');
+    try {
+      const r = await fhemJsonList();
+      if (!r) throw new Error('empty');
+      applyReadings(r);
+      setOnline();
+    } catch(_) {
+      setOffline();
+    } finally {
+      btn.classList.remove('spinning');
+    }
+  }
+
+  function startPoll() {
+    poll();
+    clearInterval(pollHandle);
+    pollHandle = setInterval(poll, 30000);
+  }
+
+  /* ═══════════════════════════════════════════
+     HELPERS
+  ═══════════════════════════════════════════ */
+  function num(r, k) {
+    const v = r[k]?.Value;
+    if (v == null) return null;
+    const n = parseFloat(v);
+    return isNaN(n) ? null : n;
+  }
+
+  function fmt(n, dec = 0) {
+    if (n === null) return '–';
+    return dec > 0 ? n.toFixed(dec) : String(Math.round(n));
+  }
+
+  function setVal(id, n, dec, unit, cls) {
+    const el = document.getElementById(id);
+    el.innerHTML = `${fmt(n, dec)}${unit ? ` <span class="u">${unit}</span>` : ''}`;
+    if (cls) el.className = `cr-val ${cls}`;
+  }
+
+  /* ═══════════════════════════════════════════
+     APPLY READINGS
+  ═══════════════════════════════════════════ */
+  function applyReadings(r) {
+
+    /* ── Kessel ── */
+    const kesselT = num(r, 'kessel.0.value');
+    const abgasT  = num(r, 'kessel.1.value');
+    const ascheH  = num(r, 'kessel.2.value');
+    const saugzug = num(r, 'kessel.3.value');
+    const o2      = num(r, 'kessel.4.value');
+
+    const inBetrieb = saugzug !== null && saugzug > 0;
+    const isHot     = kesselT  !== null && kesselT  > 35;
+
+    document.getElementById('tempNow').innerHTML =
+      kesselT !== null ? `${fmt(kesselT)}<sup>°</sup>` : `–<sup>°</sup>`;
+    document.getElementById('tempNow').classList.toggle('hot', isHot);
+
+    if (kesselT !== null) renderArc(kesselT);
+
+    const thumb = document.getElementById('arcThumb');
+    const fill  = document.getElementById('arcFill');
+    if (inBetrieb) {
+      thumb.setAttribute('fill', '#ff6218');
+      fill.setAttribute('stroke', 'url(#arcGrad)');
+    } else {
+      thumb.setAttribute('fill', 'rgba(255,98,24,.45)');
+      fill.setAttribute('stroke', 'rgba(255,98,24,.40)');
+    }
+
+    /* Sublabel: Abgas + Außen (displayed in arc) */
+    const abgasTxt  = abgasT !== null ? `${fmt(abgasT)} °C` : '–';
+    document.getElementById('arcSublabel').innerHTML =
+      `Abgas: <strong class="v-fire">${abgasTxt}</strong>`;
+
+    /* Betrieb chip */
+    document.getElementById('betriebChip').className = 'betrieb-chip ' + (inBetrieb ? 'on' : 'off');
+    document.getElementById('betriebLabel').textContent = inBetrieb ? 'In Betrieb' : 'Standby';
+
+    /* Detail values */
+    setVal('det-abgas',   abgasT,  0, '°C');
+    setVal('det-saugzug', saugzug, 0, '%');
+    setVal('det-o2',      o2,      1, '%');
+    setVal('det-asche',   ascheH,  0, 'h');
+
+    /* Asche-Warnung */
+    const ASCHE_WARN = 100;
+    const warnEl = document.getElementById('ascheWarn');
+    if (ascheH !== null && ascheH <= ASCHE_WARN) {
+      warnEl.classList.add('show');
+      document.getElementById('ascheH').textContent = fmt(ascheH);
+      document.getElementById('det-asche').className = 'cr-val ' + (ascheH <= 50 ? 'danger-v' : 'warn-v');
+    } else {
+      warnEl.classList.remove('show');
+    }
+
+    /* ── Puffer ── */
+    const pufOben   = num(r, 'puffer01.0.value');
+    const pufUnten  = num(r, 'puffer01.1.value');
+    const pufCharge = num(r, 'puffer01.2.value');
+    const pufPump   = num(r, 'puffer01.3.value');
+
+    setVal('puf-oben',  pufOben,  0, '°C', 'fire-v');
+    setVal('puf-unten', pufUnten, 0, '°C');
+
+    const pct = pufCharge !== null ? Math.max(0, Math.min(100, pufCharge)) : 0;
+    document.getElementById('puf-pct').textContent       = pufCharge !== null ? fmt(pufCharge) + '%' : '–';
+    document.getElementById('puf-bar').style.width       = pufCharge !== null ? pct + '%' : '0%';
+    renderPump('puf-dot', 'puf-pump', 'Pufferpumpe', pufPump);
+
+    /* ── Boiler ── */
+    const boilTemp = num(r, 'boiler01.0.value');
+    const boilPump = num(r, 'boiler01.1.value');
+    setVal('boil-temp', boilTemp, 0, '°C', 'ember-v');
+    renderPump('boil-dot', 'boil-pump', 'Pumpe', boilPump);
+
+    /* ── Heizkreis ── */
+    const hkIst    = num(r, 'heizkreis01.0.value');
+    const hkSoll   = num(r, 'heizkreis01.1.value');
+    const hkAussen = num(r, 'heizkreis01.2.value');
+    setVal('hk-ist',    hkIst,    0, '°C', 'fire-v');
+    setVal('hk-soll',   hkSoll,   0, '°C');
+    setVal('hk-aussen', hkAussen, 0, '°C', 'cold-v');
+
+    /* ── Austragung / Pellets ── */
+    const siloPct  = num(r, 'austragung.0.value');
+    const siloRest = num(r, 'austragung.4.value');
+    const siloVbr  = num(r, 'austragung.6.value');
+
+    if (siloPct !== null) renderSilo(siloPct);
+    document.getElementById('silo-behaelter').innerHTML =
+      `${fmt(siloPct, 1)}<span class="u"> %</span>`;
+    document.getElementById('silo-rest').innerHTML =
+      `${fmt(siloRest, 1)}<span class="u"> t</span>`;
+    document.getElementById('silo-verbr').innerHTML =
+      `${fmt(siloVbr, 1)}<span class="u"> t</span>`;
+
+    const siloPct2 = siloPct !== null ? Math.max(0, Math.min(100, siloPct)) : 0;
+    document.getElementById('silo-pct-lbl').textContent = siloPct !== null ? fmt(siloPct, 1) + '%' : '–';
+    document.getElementById('silo-bar').style.width     = siloPct !== null ? siloPct2 + '%' : '0%';
+
+    /* ── Footer ── */
+    const lu = r['lastUpdate']?.Value;
+    document.getElementById('updateLine').textContent =
+      'Datenstand: ' + (lu ? lu : new Date().toLocaleTimeString('de-DE'));
+  }
+
+  /* ═══════════════════════════════════════════
+     STATUS
+  ═══════════════════════════════════════════ */
+  function setOnline() {
+    document.getElementById('statusChip').className     = 'status-chip connected';
+    document.getElementById('statusLabel').textContent  = 'Verbunden';
+    document.getElementById('faultLine').textContent    = '';
+    document.getElementById('faultLine').className      = 'fault-line';
+  }
+
+  function setOffline() {
+    document.getElementById('statusChip').className     = 'status-chip error';
+    document.getElementById('statusLabel').textContent  = 'Nicht erreichbar';
+    document.getElementById('faultLine').textContent    = 'FHEM nicht erreichbar — URL in den Einstellungen prüfen';
+    document.getElementById('faultLine').className      = 'fault-line err';
+  }
+
+  /* ═══════════════════════════════════════════
+     TOAST
+  ═══════════════════════════════════════════ */
+  let toastTimer;
+  function toast(msg, type = '') {
+    const el = document.getElementById('toast');
+    el.textContent = msg;
+    el.className   = 'toast show' + (type ? ' ' + type : '');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => el.classList.remove('show'), 2400);
+  }
+
+  /* ═══════════════════════════════════════════
+     TAB SWITCHING
+  ═══════════════════════════════════════════ */
+  function switchTab(tab) {
+    activeTab = tab;
+    document.getElementById('viewLive').style.display    = tab === 'live'    ? '' : 'none';
+    document.getElementById('viewHistory').style.display = tab === 'history' ? '' : 'none';
+    document.getElementById('tabLive').classList.toggle('active',    tab === 'live');
+    document.getElementById('tabHistory').classList.toggle('active', tab === 'history');
+    if (tab === 'history') loadHistory();
+  }
+
+  /* ═══════════════════════════════════════════
+     HISTORY — RANGE
+  ═══════════════════════════════════════════ */
+  function setRange(h) {
+    histRange = h;
+    historyLoaded = false;
+    document.querySelectorAll('.range-btn').forEach(b =>
+      b.classList.toggle('active', +b.dataset.h === h));
+    loadHistory();
+  }
+
+  /* ═══════════════════════════════════════════
+     HISTORY — FHEM DbLog FETCH
+  ═══════════════════════════════════════════ */
+  function localDateStr(d) {
+    const p = n => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}_${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
+  }
+
+  async function fetchDbLog(reading, hours) {
+    const to   = new Date();
+    const from = new Date(to - hours * 3600000);
+    const cmd  = `get ${dbLogName} - - ${localDateStr(from)} ${localDateStr(to)} ${deviceName}:${reading}`;
+    try {
+      const res  = await fetch(`${fhemUrl}?cmd=${encodeURIComponent(cmd)}&XHR=1${csrfParam()}`, { mode:'cors' });
+      const text = await res.text();
+      return text.trim().split('\n').filter(l => l.trim()).map(line => {
+        const parts = line.trim().split(/\s+/);
+        return { x: new Date(parts[0].replace('_', 'T')), y: parseFloat(parts[1]) };
+      }).filter(p => !isNaN(p.y));
+    } catch(_) { return []; }
+  }
+
+  /* ═══════════════════════════════════════════
+     HISTORY — CHART.JS CONFIG
+  ═══════════════════════════════════════════ */
+  const TICK_COLOR  = 'rgba(245,232,213,.32)';
+  const GRID_COLOR  = 'rgba(255,255,255,.055)';
+  const FONT        = { family:"'DM Sans',sans-serif", size:10 };
+  const TIP_BG      = 'rgba(9,6,3,.94)';
+
+  function axisBase(position, title, drawGrid = true) {
+    return {
+      type:'linear', position,
+      title:{ display:!!title, text:title || '', color:TICK_COLOR, font:FONT },
+      grid:{ color: drawGrid ? GRID_COLOR : 'transparent' },
+      ticks:{ color:TICK_COLOR, font:FONT, maxTicksLimit:6 },
+      border:{ color:'rgba(255,98,24,.12)' },
+    };
+  }
+
+  function makeChart(id, datasets, yLeftTitle, yRightTitle, hours) {
+    const ctx  = document.getElementById(id);
+    if (!ctx) return;
+    if (charts[id]) { charts[id].destroy(); delete charts[id]; }
+
+    const unit = hours <= 24 ? 'hour' : hours <= 336 ? 'day' : 'day';
+    const fmt  = hours <= 24 ? 'HH:mm' : 'dd.MM.';
+
+    const scales = {
+      x: {
+        type:'time',
+        time:{ unit, displayFormats:{ hour:'HH:mm', day:'dd.MM.' } },
+        grid:{ color:GRID_COLOR },
+        ticks:{ color:TICK_COLOR, font:FONT, maxTicksLimit:8 },
+        border:{ color:'rgba(255,98,24,.12)' },
+      },
+      yLeft: axisBase('left', yLeftTitle),
+    };
+    if (yRightTitle) scales.yRight = { ...axisBase('right', yRightTitle, false), grid:{ drawOnChartArea:false } };
+
+    charts[id] = new Chart(ctx, {
+      type:'line',
+      data:{ datasets },
+      options:{
+        responsive:true,
+        maintainAspectRatio:false,
+        animation:{ duration:600 },
+        interaction:{ mode:'index', intersect:false },
+        plugins:{
+          legend:{
+            labels:{
+              color:'rgba(245,232,213,.55)', font:FONT,
+              boxWidth:22, padding:14, usePointStyle:true, pointStyle:'line',
+            }
+          },
+          tooltip:{
+            backgroundColor:TIP_BG,
+            borderColor:'rgba(255,98,24,.22)', borderWidth:1,
+            titleColor:'rgba(245,232,213,.55)',
+            bodyColor:'rgba(245,232,213,.88)',
+            padding:10, cornerRadius:10,
+          },
+        },
+        elements:{
+          point:{ radius:0, hitRadius:10 },
+          line:{ tension:0.28, borderWidth:1.8 },
+        },
+        scales,
+      }
+    });
+  }
+
+  function ds(label, data, color, yAxisID, opts = {}) {
+    return {
+      label, data, yAxisID,
+      borderColor: color,
+      backgroundColor: opts.fill ? color.replace(')',',0.07)').replace('rgb','rgba') : 'transparent',
+      fill: !!opts.fill,
+      borderDash: opts.dashed ? [5,3] : [],
+      ...opts,
+    };
+  }
+
+  /* ═══════════════════════════════════════════
+     HISTORY — LOAD ALL CHARTS
+  ═══════════════════════════════════════════ */
+  async function loadHistory() {
+    if (historyLoaded) return;
+
+    const h  = histRange;
+    const ah = Math.max(h, 60 * 24);
+
+    ['loadKessel','loadPuffer','loadBoiler','loadHeizkreis','loadAustragung']
+      .forEach(id => { const el = document.getElementById(id); if(el) el.classList.remove('hidden'); });
+
+    const now = new Date().toLocaleString('de-DE',{dateStyle:'short',timeStyle:'short'});
+    document.getElementById('histUpdateLine').textContent = 'Zeitraum: ' + h + ' h | Stand: ' + now;
+
+    const [
+      kesselT, abgasT,  saugzug, o2,
+      pufOben, pufUnten, pufCharge, pufPump,
+      boilTemp, boilPump,
+      hkIst, hkSoll, hkAussen,
+      siloFill, siloRest, siloVbr,
+    ] = await Promise.all([
+      fetchDbLog('kessel.0.value',      h),
+      fetchDbLog('kessel.1.value',      h),
+      fetchDbLog('kessel.3.value',      h),
+      fetchDbLog('kessel.4.value',      h),
+      fetchDbLog('puffer01.0.value',    h),
+      fetchDbLog('puffer01.1.value',    h),
+      fetchDbLog('puffer01.2.value',    h),
+      fetchDbLog('puffer01.3.value',    h),
+      fetchDbLog('boiler01.0.value',    h),
+      fetchDbLog('boiler01.1.value',    h),
+      fetchDbLog('heizkreis01.0.value', h),
+      fetchDbLog('heizkreis01.1.value', h),
+      fetchDbLog('heizkreis01.2.value', h),
+      fetchDbLog('austragung.0.value',  ah),
+      fetchDbLog('austragung.4.value',  ah),
+      fetchDbLog('austragung.6.value',  ah),
+    ]);
+
+    ['loadKessel','loadPuffer','loadBoiler','loadHeizkreis','loadAustragung']
+      .forEach(id => { const el = document.getElementById(id); if(el) el.classList.add('hidden'); });
+
+    makeChart('chartKessel', [
+      ds('Kesseltemperatur (°C)', kesselT, '#ff6218', 'yLeft',  { fill:true }),
+      ds('Abgastemperatur (°C)',  abgasT,  '#ffb040', 'yLeft',  { dashed:true }),
+      ds('Saugzug (%)',           saugzug, '#4dbe8a', 'yRight'),
+      ds('O₂ (%)',                o2,      '#58b8d4', 'yRight'),
+    ], 'Temperatur (°C)', 'Prozent (%)', h);
+
+    makeChart('chartPuffer', [
+      ds('Puffer oben (°C)',    pufOben,   '#ff6218', 'yLeft',  { fill:true }),
+      ds('Puffer unten (°C)',   pufUnten,  '#ffb040', 'yLeft',  { dashed:true }),
+      ds('Ladezustand (%)',     pufCharge, '#4dbe8a', 'yRight'),
+      ds('Pufferpumpe (%)',     pufPump,   '#58b8d4', 'yRight'),
+    ], 'Temperatur (°C)', 'Prozent (%)', h);
+
+    makeChart('chartBoiler', [
+      ds('Boilertemperatur oben (°C)', boilTemp, '#58b8d4', 'yLeft',  { fill:true }),
+      ds('Boilerpumpe (%)',            boilPump, '#ff6218', 'yRight'),
+    ], 'Temperatur (°C)', 'Prozent (%)', h);
+
+    makeChart('chartHeizkreis', [
+      ds('Vorlauf Ist (°C)',    hkIst,    '#ff6218', 'yLeft', { fill:true }),
+      ds('Vorlauf Soll (°C)',   hkSoll,   '#ffb040', 'yLeft', { dashed:true }),
+      ds('Außentemperatur (°C)', hkAussen, '#58b8d4', 'yLeft'),
+    ], 'Temperatur (°C)', null, h);
+
+    makeChart('chartAustragung', [
+      ds('Pelletlager Restbestand (t)', siloRest, '#c89040', 'yLeft',  { fill:true }),
+      ds('Verbrauch gesamt (t)',        siloVbr,  '#4dbe8a', 'yLeft',  { dashed:true }),
+      ds('Füllstand Behälter (%)',      siloFill, '#ff6218', 'yRight'),
+    ], 'Tonnen (t)', 'Prozent (%)', ah);
+
+    historyLoaded = true;
+  }
+
+  /* ═══════════════════════════════════════════
+     BOOT
+  ═══════════════════════════════════════════ */
+  fetchCsrf().then(startPoll);
+</script>
+</body>
+</html>
