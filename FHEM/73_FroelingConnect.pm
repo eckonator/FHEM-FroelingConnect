@@ -591,6 +591,7 @@ sub FroelingConnect_UpdateDone {
         readingsBulkUpdate($hash, $key, $r->{$key});
     }
     readingsBulkUpdate($hash, "lastUpdate", $utcNow);
+    readingsBulkUpdate($hash, "state", "active");
     readingsEndUpdate($hash, 1);
 
     my $count = scalar(keys %$r);
