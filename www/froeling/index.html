@@ -1029,6 +1029,19 @@
   }
 
   /* ═══════════════════════════════════════════
+     HISTORY — SMOOTHING
+  ═══════════════════════════════════════════ */
+  function smooth(data, win = 7) {
+    if (data.length < win) return data;
+    const half = Math.floor(win / 2);
+    return data.map((p, i) => {
+      const slice = data.slice(Math.max(0, i - half), Math.min(data.length, i + half + 1));
+      const avg   = slice.reduce((s, pt) => s + pt.y, 0) / slice.length;
+      return { x: p.x, y: avg };
+    });
+  }
+
+  /* ═══════════════════════════════════════════
      HISTORY — CHART.JS CONFIG
   ═══════════════════════════════════════════ */
   const TICK_COLOR  = 'rgba(245,232,213,.32)';
@@ -1091,7 +1104,7 @@
         },
         elements:{
           point:{ radius:0, hitRadius:10 },
-          line:{ tension:0.28, borderWidth:1.8 },
+          line:{ tension:0.4, borderWidth:1.8 },
         },
         scales,
       }
@@ -1102,8 +1115,8 @@
     return {
       label, data, yAxisID,
       borderColor: color,
-      backgroundColor: opts.fill ? color.replace(')',',0.07)').replace('rgb','rgba') : 'transparent',
-      fill: !!opts.fill,
+      backgroundColor: 'transparent',
+      fill: false,
       borderDash: opts.dashed ? [5,3] : [],
       ...opts,
     };
@@ -1153,34 +1166,34 @@
       .forEach(id => { const el = document.getElementById(id); if(el) el.classList.add('hidden'); });
 
     makeChart('chartKessel', [
-      ds('Kesseltemperatur (°C)', kesselT, '#ff6218', 'yLeft',  { fill:true }),
-      ds('Abgastemperatur (°C)',  abgasT,  '#ffb040', 'yLeft',  { dashed:true }),
-      ds('Saugzug (%)',           saugzug, '#4dbe8a', 'yRight'),
-      ds('O₂ (%)',                o2,      '#58b8d4', 'yRight'),
+      ds('Kesseltemperatur (°C)', smooth(kesselT), '#ff6218', 'yLeft',  { fill:true }),
+      ds('Abgastemperatur (°C)',  smooth(abgasT),  '#ffb040', 'yLeft',  { dashed:true }),
+      ds('Saugzug (%)',           saugzug,          '#4dbe8a', 'yRight'),
+      ds('O₂ (%)',                o2,               '#58b8d4', 'yRight'),
     ], 'Temperatur (°C)', 'Prozent (%)', h);
 
     makeChart('chartPuffer', [
-      ds('Puffer oben (°C)',    pufOben,   '#ff6218', 'yLeft',  { fill:true }),
-      ds('Puffer unten (°C)',   pufUnten,  '#ffb040', 'yLeft',  { dashed:true }),
-      ds('Ladezustand (%)',     pufCharge, '#4dbe8a', 'yRight'),
-      ds('Pufferpumpe (%)',     pufPump,   '#58b8d4', 'yRight'),
+      ds('Puffer oben (°C)',    smooth(pufOben),   '#ff6218', 'yLeft',  { fill:true }),
+      ds('Puffer unten (°C)',   smooth(pufUnten),  '#ffb040', 'yLeft',  { dashed:true }),
+      ds('Ladezustand (%)',     pufCharge,          '#4dbe8a', 'yRight'),
+      ds('Pufferpumpe (%)',     pufPump,            '#58b8d4', 'yRight'),
     ], 'Temperatur (°C)', 'Prozent (%)', h);
 
     makeChart('chartBoiler', [
-      ds('Boilertemperatur oben (°C)', boilTemp, '#58b8d4', 'yLeft',  { fill:true }),
-      ds('Boilerpumpe (%)',            boilPump, '#ff6218', 'yRight'),
+      ds('Boilertemperatur oben (°C)', smooth(boilTemp), '#58b8d4', 'yLeft',  { fill:true }),
+      ds('Boilerpumpe (%)',            boilPump,          '#ff6218', 'yRight'),
     ], 'Temperatur (°C)', 'Prozent (%)', h);
 
     makeChart('chartHeizkreis', [
-      ds('Vorlauf Ist (°C)',    hkIst,    '#ff6218', 'yLeft', { fill:true }),
-      ds('Vorlauf Soll (°C)',   hkSoll,   '#ffb040', 'yLeft', { dashed:true }),
-      ds('Außentemperatur (°C)', hkAussen, '#58b8d4', 'yLeft'),
+      ds('Vorlauf Ist (°C)',     smooth(hkIst),    '#ff6218', 'yLeft', { fill:true }),
+      ds('Vorlauf Soll (°C)',    smooth(hkSoll),   '#ffb040', 'yLeft', { dashed:true }),
+      ds('Außentemperatur (°C)', smooth(hkAussen), '#58b8d4', 'yLeft'),
     ], 'Temperatur (°C)', null, h);
 
     makeChart('chartAustragung', [
-      ds('Pelletlager Restbestand (t)', siloRest, '#c89040', 'yLeft',  { fill:true }),
-      ds('Verbrauch gesamt (t)',        siloVbr,  '#4dbe8a', 'yLeft',  { dashed:true }),
-      ds('Füllstand Behälter (%)',      siloFill, '#ff6218', 'yRight'),
+      ds('Pelletlager Restbestand (t)', smooth(siloRest), '#c89040', 'yLeft',  { fill:true }),
+      ds('Verbrauch gesamt (t)',        smooth(siloVbr),  '#4dbe8a', 'yLeft',  { dashed:true }),
+      ds('Füllstand Behälter (%)',      siloFill,          '#ff6218', 'yRight'),
     ], 'Tonnen (t)', 'Prozent (%)', ah);
 
     historyLoaded = true;
