@@ -1116,7 +1116,7 @@
     if (historyLoaded) return;
 
     const h  = histRange;
-    const ah = Math.max(h, 60 * 24);
+    const ah = Math.max(h, 24);
 
     ['loadKessel','loadPuffer','loadBoiler','loadHeizkreis','loadAustragung']
       .forEach(id => { const el = document.getElementById(id); if(el) el.classList.remove('hidden'); });
