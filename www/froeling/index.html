@@ -431,11 +431,11 @@
         <circle cx="197.8" cy="146.4" r="2.2" fill="rgba(255,255,255,.14)"/>
 
         <!-- Scale labels -->
-        <text x="11"  y="53"  fill="rgba(245,232,213,.30)" font-size="9.5" font-family="DM Sans,sans-serif">0°</text>
-        <text x="7"   y="156" fill="rgba(245,232,213,.18)" font-size="8.5" font-family="DM Sans,sans-serif">25°</text>
-        <text x="110" y="218" fill="rgba(245,232,213,.18)" font-size="8.5" font-family="DM Sans,sans-serif" text-anchor="middle">50°</text>
-        <text x="213" y="156" fill="rgba(245,232,213,.18)" font-size="8.5" font-family="DM Sans,sans-serif" text-anchor="end">75°</text>
-        <text x="209" y="53"  fill="rgba(245,232,213,.30)" font-size="9.5" font-family="DM Sans,sans-serif" text-anchor="end">100°</text>
+        <text x="11"  y="53"  fill="rgba(245,232,213,.30)" font-size="9.5" font-family="DM Sans,sans-serif">0%</text>
+        <text x="7"   y="156" fill="rgba(245,232,213,.18)" font-size="8.5" font-family="DM Sans,sans-serif">25%</text>
+        <text x="110" y="218" fill="rgba(245,232,213,.18)" font-size="8.5" font-family="DM Sans,sans-serif" text-anchor="middle">50%</text>
+        <text x="213" y="156" fill="rgba(245,232,213,.18)" font-size="8.5" font-family="DM Sans,sans-serif" text-anchor="end">75%</text>
+        <text x="209" y="53"  fill="rgba(245,232,213,.30)" font-size="9.5" font-family="DM Sans,sans-serif" text-anchor="end">100%</text>
 
         <!-- Fill arc (dynamic) -->
         <path id="arcFill" d="" fill="none" stroke="url(#arcGrad)" stroke-width="5"
@@ -450,10 +450,10 @@
       </svg>
 
       <div class="arc-center">
-        <div class="arc-eyebrow">Kesseltemperatur</div>
-        <div class="temp-now" id="tempNow">–<sup>°</sup></div>
+        <div class="arc-eyebrow">Puffer · Ladung</div>
+        <div class="temp-now" id="tempNow">–<sup>%</sup></div>
         <div class="arc-sublabel" id="arcSublabel">
-          Abgas: <strong class="v-fire" id="abgasVal">–</strong>
+          Oben: <strong class="v-fire">–</strong> | Unten: <strong>–</strong>
         </div>
       </div>
     </div>
@@ -462,50 +462,21 @@
   <!-- ─────────────── CARDS ─────────────── -->
   <div class="cards-grid">
 
-    <!-- Puffer (full width) -->
-    <div class="card card-full">
-      <div class="card-header">
-        <div class="card-icon ci-fire">🔥</div>
-        <span class="card-title">Pufferspeicher</span>
-      </div>
-      <div class="card-rows">
-        <div class="card-row">
-          <span class="cr-label">Temperatur oben</span>
-          <span class="cr-val fire-v" id="puf-oben">– <span class="u">°C</span></span>
-        </div>
-        <div class="card-row">
-          <span class="cr-label">Temperatur unten</span>
-          <span class="cr-val" id="puf-unten">– <span class="u">°C</span></span>
-        </div>
-      </div>
-      <div class="prog-wrap">
-        <div class="prog-head">
-          <span class="prog-lbl">Ladezustand</span>
-          <span class="prog-pct" id="puf-pct">–</span>
-        </div>
-        <div class="prog-track"><div class="prog-fill pf-fire" id="puf-bar" style="width:0%"></div></div>
-      </div>
-      <div class="pump-row">
-        <div class="pump-dot off" id="puf-dot"></div>
-        <span class="pump-lbl" id="puf-pump">Pufferpumpe: –</span>
-      </div>
-    </div>
-
-    <!-- Boiler -->
+    <!-- Kessel -->
     <div class="card">
       <div class="card-header">
-        <div class="card-icon ci-cold">🌊</div>
-        <span class="card-title">Warmwasser</span>
+        <div class="card-icon ci-fire">🔥</div>
+        <span class="card-title">Kessel</span>
       </div>
       <div class="card-rows">
         <div class="card-row">
-          <span class="cr-label">Boilertemp.</span>
-          <span class="cr-val ember-v" id="boil-temp">– <span class="u">°C</span></span>
+          <span class="cr-label">Kesseltemp.</span>
+          <span class="cr-val fire-v" id="kessel-card-temp">– <span class="u">°C</span></span>
         </div>
-      </div>
-      <div class="pump-row">
-        <div class="pump-dot off" id="boil-dot"></div>
-        <span class="pump-lbl" id="boil-pump">Pumpe: –</span>
+        <div class="card-row">
+          <span class="cr-label">Abgas</span>
+          <span class="cr-val ember-v" id="kessel-card-abgas">– <span class="u">°C</span></span>
+        </div>
       </div>
     </div>
 
@@ -889,20 +860,28 @@
   function applyReadings(r) {
 
     /* ── Kessel ── */
-    const kesselT = num(r, 'kessel.0.value');
-    const abgasT  = num(r, 'kessel.1.value');
-    const ascheH  = num(r, 'kessel.2.value');
-    const saugzug = num(r, 'kessel.3.value');
-    const o2      = num(r, 'kessel.4.value');
+    const kesselT  = num(r, 'kessel.0.value');
+    const abgasT   = num(r, 'kessel.1.value');
+    const ascheH   = num(r, 'kessel.2.value');
+    const saugzug  = num(r, 'kessel.3.value');
+    const o2       = num(r, 'kessel.4.value');
 
-    const inBetrieb = saugzug !== null && saugzug > 0;
-    const isHot     = kesselT  !== null && kesselT  > 35;
+    /* ── Puffer (für Arc) ── */
+    const pufOben   = num(r, 'puffer01.0.value');
+    const pufUnten  = num(r, 'puffer01.1.value');
+    const pufCharge = num(r, 'puffer01.2.value');
+
+    /* ── Boiler ── */
+    const boilTemp = num(r, 'boiler01.0.value');
+
+    const inBetrieb = saugzug   !== null && saugzug   > 0;
+    const isHot     = pufCharge !== null && pufCharge > 50;
 
     document.getElementById('tempNow').innerHTML =
-      kesselT !== null ? `${fmt(kesselT)}<sup>°</sup>` : `–<sup>°</sup>`;
+      pufCharge !== null ? `${fmt(pufCharge)}<sup>%</sup>` : `–<sup>%</sup>`;
     document.getElementById('tempNow').classList.toggle('hot', isHot);
 
-    if (kesselT !== null) renderArc(kesselT);
+    if (pufCharge !== null) renderArc(pufCharge);
 
     const thumb = document.getElementById('arcThumb');
     const fill  = document.getElementById('arcFill');
@@ -914,10 +893,11 @@
       fill.setAttribute('stroke', 'rgba(255,98,24,.40)');
     }
 
-    /* Sublabel: Abgas + Außen (displayed in arc) */
-    const abgasTxt  = abgasT !== null ? `${fmt(abgasT)} °C` : '–';
+    /* Sublabel: Puffer oben / unten */
+    const obenTxt  = pufOben  !== null ? `${fmt(pufOben)} °C`  : '–';
+    const untenTxt = pufUnten !== null ? `${fmt(pufUnten)} °C` : '–';
     document.getElementById('arcSublabel').innerHTML =
-      `Abgas: <strong class="v-fire">${abgasTxt}</strong>`;
+      `Oben: <strong class="v-fire">${obenTxt}</strong> | Unten: <strong class="v-ember">${untenTxt}</strong>`;
 
     /* Betrieb chip */
     document.getElementById('betriebChip').className = 'betrieb-chip ' + (inBetrieb ? 'on' : 'off');
@@ -940,25 +920,8 @@
       warnEl.classList.remove('show');
     }
 
-    /* ── Puffer ── */
-    const pufOben   = num(r, 'puffer01.0.value');
-    const pufUnten  = num(r, 'puffer01.1.value');
-    const pufCharge = num(r, 'puffer01.2.value');
-    const pufPump   = num(r, 'puffer01.3.value');
-
-    setVal('puf-oben',  pufOben,  0, '°C', 'fire-v');
-    setVal('puf-unten', pufUnten, 0, '°C');
-
-    const pct = pufCharge !== null ? Math.max(0, Math.min(100, pufCharge)) : 0;
-    document.getElementById('puf-pct').textContent       = pufCharge !== null ? fmt(pufCharge) + '%' : '–';
-    document.getElementById('puf-bar').style.width       = pufCharge !== null ? pct + '%' : '0%';
-    renderPump('puf-dot', 'puf-pump', 'Pufferpumpe', pufPump);
-
-    /* ── Boiler ── */
-    const boilTemp = num(r, 'boiler01.0.value');
-    const boilPump = num(r, 'boiler01.1.value');
-    setVal('boil-temp', boilTemp, 0, '°C', 'ember-v');
-    renderPump('boil-dot', 'boil-pump', 'Pumpe', boilPump);
+    setVal('kessel-card-temp',  kesselT, 0, '°C', 'fire-v');
+    setVal('kessel-card-abgas', abgasT,  0, '°C', 'ember-v');
 
     /* ── Heizkreis ── */
     const hkIst    = num(r, 'heizkreis01.0.value');
