@@ -119,6 +119,7 @@ attr Froeling_PE1 interval 5
 |---|---|---|
 | `interval` | `5` | Abfrage-Intervall in Minuten |
 | `facilityIndex` | `0` | Index der Anlage (bei mehreren Anlagen im Account) |
+| `allowSet` | `0` | `1` = Modul darf Werte an der Heizung ändern. Solange `0`, wird jeder Schreibversuch abgewiesen |
 | `disable` | `0` | `1` = alle Abfragen deaktivieren |
 | `disabledForIntervals` | – | Abfragen in Zeitbereichen deaktivieren, z.B. `23:00-06:00` |
 | `stateFormat` | – | Freie Formatierung des STATE-Wertes (FHEM-Standard) |
@@ -133,6 +134,45 @@ attr Froeling_PE1 interval 5
 | `set <name> password <Passwort>` | Passwort verschlüsselt speichern und Login starten |
 | `set <name> update` | Sofortigen Datenabruf anstoßen |
 | `set <name> relogin` | Session zurücksetzen und neuen Login erzwingen |
+| `set <name> <komponente>.cfg.<parameter> <wert>` | **Wert an der Heizung ändern** – siehe unten |
+| `set <name> parameter <parameterId> <wert>` | Experten-Befehl: beliebige Parameter-ID direkt schreiben, ohne Prüfung |
+
+### Werte ändern
+
+Für jeden Parameter, den die API als änderbar (`editable`) meldet, legt das Modul
+automatisch einen set-Befehl an. Der Befehlsname ist identisch mit dem zugehörigen
+Reading:
+
+```
+attr Froeling_PE1 allowSet 1              # einmalig: Schreiben freigeben
+
+set Froeling_PE1 kessel.cfg.boilerSetTemp 78        # Kessel-Solltemperatur [60..90 °C]
+set Froeling_PE1 kessel.cfg.mode2 Automatik         # Kessel Zustand: Dauerlast|Brauchwasser|Automatik
+set Froeling_PE1 kessel.cfg.boilerOn Kessel_AUS     # Auswahlliste, Leerzeichen als "_"
+set Froeling_PE1 kessel.cfg.mode2 2                 # alternativ der numerische Schlüssel
+```
+
+In FHEMWEB erscheinen die Befehle mit passendem Widget: Schieberegler bei
+Zahlenwerten mit sinnvollem Bereich, Dropdown bei Auswahllisten.
+
+Voraussetzungen und Verhalten:
+
+* Das Attribut **`allowSet 1`** muss gesetzt sein – sonst antwortet jeder Befehl mit
+  einer Fehlermeldung und es geht kein Schreibzugriff an die API.
+* An der Anlage selbst muss **„Fernschalten über connect möglich"** (`remoteOn`)
+  aktiviert sein, sonst lehnt die Heizung Änderungen ab.
+* Die Befehle stehen erst nach dem ersten erfolgreichen Update zur Verfügung
+  (dort werden die änderbaren Parameter erkannt) – also auch nach einem
+  FHEM-Neustart erst nach wenigen Sekunden.
+* Zahlenwerte werden **vor** dem Senden gegen `minVal`/`maxVal` geprüft,
+  Auswahlwerte gegen die erlaubte Liste.
+* Das Ergebnis steht in `lastSet` / `lastSetResult`
+  (`ok`, `unchanged` = Wert war bereits so, oder `error: …`).
+* Nach erfolgreichem Schreiben wird die betroffene Komponente nach ~3 Sekunden
+  neu eingelesen, damit die Readings den neuen Wert zeigen.
+
+Technisch: `PUT /fcs/v1.0/resources/user/{userId}/facility/{facilityId}/parameter/{parameterId}`
+mit `{"value":"<wert>"}`.
 
 ---
 
@@ -185,8 +225,38 @@ Jeder Parameter einer Komponente erzeugt folgende Readings (`N` = laufender Inde
 | `{präfix}.N.maxVal` | Maximalwert |
 | `{präfix}.N.minVal` | Minimalwert |
 | `{präfix}.N.notificationConfigurable` | Push-Benachrichtigungen konfigurierbar |
-| `{präfix}.N.stringListKeyValues.K` | Auswahlliste (z.B. `0`=NEIN, `1`=JA) |
+| `{präfix}.N.stringListKeyValues.K` | Auswahlliste: `K` = Rohwert, Reading-Inhalt = Text (z.B. `…stringListKeyValues.0` = `NEIN`) |
 | `lastUpdate` | UTC-Zeitstempel des letzten Abrufs |
+| `lastSet` | Letzter Schreibversuch (Befehl und Wert) |
+| `lastSetResult` | Ergebnis des letzten Schreibversuchs: `ok`, `unchanged` oder `error: …` |
+
+### Änderbare Parameter (`{präfix}.cfg.*`)
+
+Zusätzlich wird jeder änderbare Parameter einer Komponente (aus `setupView` und
+`topView.configParams` der API) unter einem eigenen Namensraum veröffentlicht.
+Genau diese Parameter lassen sich mit den gleichnamigen set-Befehlen schreiben:
+
+| Reading | Beschreibung |
+|---|---|
+| `{präfix}.cfg.{name}` | Aktueller Wert – bei Auswahllisten der lesbare Text |
+| `{präfix}.cfg.{name}.raw` | Rohwert wie von der API geliefert |
+| `{präfix}.cfg.{name}.id` | Parameter-ID, die beim Schreiben verwendet wird |
+| `{präfix}.cfg.{name}.options` | Auswahlliste als `schlüssel=text,schlüssel=text` |
+| `{präfix}.cfg.{name}.minVal` / `.maxVal` / `.unit` | Wertebereich und Einheit |
+| `{präfix}.cfg.{name}.displayName` / `.parameterType` / `.editable` | Metadaten |
+
+Beispiel Kessel:
+
+```
+kessel.cfg.boilerSetTemp          80
+kessel.cfg.boilerSetTemp.minVal   60
+kessel.cfg.boilerSetTemp.maxVal   90
+kessel.cfg.mode2                  Automatik
+kessel.cfg.mode2.options          0=Dauerlast,1=Brauchwasser,2=Automatik
+```
+
+> Die bestehenden Index-Readings (`kessel.0.value` usw.) bleiben davon unberührt –
+> ihre Nummerierung kommt weiterhin ausschließlich aus `stateView`.
 
 ### Wichtige Readings für die Fröling PE1
 
